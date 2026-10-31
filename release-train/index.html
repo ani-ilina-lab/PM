@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Релизный поезд за 5 минут</title>
+<style>
+:root{--bg:#f5f1e8;--fg:#222;--mu:#777;--ln:#cfc8b8;--ac:#d9381e}
+*{box-sizing:border-box}
+body{margin:0 auto;max-width:860px;padding:20px 14px;background:var(--bg);color:var(--fg);font:14px/1.5 ui-monospace,Menlo,Consolas,monospace}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--mu);margin-bottom:12px}
+.box{border:1px solid var(--ln);padding:12px;margin-bottom:14px}
+.t{font-weight:bold;margin-bottom:6px;text-transform:uppercase;font-size:11px;letter-spacing:.06em;color:var(--mu)}
+.rail{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:4px}
+.st{flex:1;min-width:84px;text-align:center;cursor:pointer;padding:8px 2px;border:1px solid var(--ln);margin-left:-1px;background:transparent;color:var(--fg);font:inherit;font-size:12px}
+.st b{display:block;font-size:16px}
+.st small{display:block;color:var(--mu);font-size:10px}
+.st.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.st.on small{color:#fde}
+.card{margin-top:10px;border-left:3px solid var(--ac);padding:4px 10px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card .doc{color:var(--mu);margin-top:6px}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.col{border:1px solid var(--ln);padding:8px}
+.col h4{margin:0 0 4px;font-size:13px}
+.must{border-top:4px solid var(--ac)}.should{border-top:4px solid #d99a1e}.could{border-top:4px solid #8aa}
+.cut{color:var(--ac);font-weight:bold}
+.wheel{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{border:1px solid var(--ln);padding:3px 8px}
+.arrow{color:var(--mu)}
+.who{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.who div{border:1px solid var(--ln);padding:6px}
+.who b{color:var(--ac)}
+.btns button{font:inherit;border:1px solid var(--ln);background:transparent;color:var(--fg);padding:4px 8px;cursor:pointer;margin:0 4px 4px 0}
+.btns button.on{background:var(--fg);color:var(--bg)}
+.sim{margin-top:8px;min-height:52px}
+@media(max-width:560px){.cols,.who{grid-template-columns:1fr}}
+</style></head><body>
+<h1>🚆 Релизный поезд за 5 минут</h1>
+<div class="sub">Как PO объясняю новичку: дата фиксирована, состав гибкий.</div>
+
+<div class="box">
+<div class="t">Идея</div>
+Как электричка: отправляется по расписанию, <b>каждые 2 недели в четверг</b>.<br>
+Фича не готова? Она не задерживает поезд, она едет <b>следующим</b>.<br>
+<span class="arrow">Выгода: предсказуемость для бизнеса, маленькие релизы, меньше риска.</span>
+</div>
+
+<div class="box">
+<div class="t">Один рейс = 14 дней (нажмите на этап)</div>
+<div class="rail" id="rail"></div>
+<div class="card" id="card"></div>
+</div>
+
+<div class="box">
+<div class="t">Что берём в рейс (приоритеты)</div>
+<div class="cols">
+<div class="col must"><h4>MUST</h4>Без этого релиз не имеет смысла. Платежи, багфикс с деньгами.</div>
+<div class="col should"><h4>SHOULD</h4>Важно, но можно пережить без этого один рейс.</div>
+<div class="col could"><h4>COULD</h4>Приятный бонус, тёмная тема. <span class="cut">Режем первым.</span></div>
+</div>
+<div class="sub" style="margin:8px 0 0">Золотое правило: сначала режем <b>состав</b>, потом уже думаем про дату.</div>
+</div>
+
+<div class="box">
+<div class="t">Симулятор: что-то пошло не так</div>
+<div class="btns" id="btns"></div>
+<div class="sim" id="sim"></div>
+</div>
+
+<div class="box">
+<div class="t">Кто за что отвечает</div>
+<div class="who">
+<div><b>Release Manager</b><br>Календарь, план, ведёт go/no-go</div>
+<div><b>Product Owner</b><br>Что входит в релиз и зачем</div>
+<div><b>Tech Lead</b><br>Техриски, зависимости, фиксы</div>
+<div><b>QA-лид</b><br>Регрессия, качество, exit criteria</div>
+<div><b>DevOps / SRE</b><br>Выкладка, откат, мониторинг</div>
+<div><b>Поддержка и маркетинг</b><br>Знают, что меняется, и говорят клиентам</div>
+</div>
+</div>
+
+<div class="box">
+<div class="t">Страховки, без которых страшно</div>
+<div class="wheel">
+<span class="pill">🚩 Feature flag: выключить за 1 минуту</span>
+<span class="pill">⏪ План отката</span>
+<span class="pill">📈 Мониторинг + триггеры</span>
+<span class="pill">🎚 Поэтапная раскатка 5%→25%→100%</span>
+</div>
+</div>
+
+<script>
+const S=[
+["День 1","Старт","Kickoff","Собираем команды, смотрим roadmap и capacity. Договариваемся о цели рейса.","Календарь поездов, бэклог"],
+["День 5","Scope freeze","Состав","Фиксируем, что едет в рейсе. Расставляем Must/Should/Could, назначаем владельцев, описываем зависимости и риски.","Состав релиза, карта зависимостей, реестр рисков, релизный план"],
+["День 8","Feature freeze","Новых фич нет","Новые фичи больше не принимаем. Всё, что не готово, помечаем как кандидата на исключение.","Ежедневный статус, change request"],
+["День 9–11","Регрессия","Проверяем","QA гоняет автотесты, ручной критичный путь, нагрузку и безопасность. Баги чиним или откладываем.","Exit criteria, реестр рисков"],
+["День 11","Code freeze","Только блокеры","Меняем код только для блокирующих багов. Каждое изменение: ревью, повторная проверка, одобрение RM.","Change request"],
+["День 13","Go / No-Go","Решение","Все собираются на 30 минут и идут по чек-листу: качество, откат, мониторинг, люди. Решение GO, GO с условиями или NO-GO. Подписываем протокол.","Чек-лист и протокол go/no-go"],
+["День 14","Выкладка","Поезд едет","Идём строго по runbook с паузами и проверками. В фоне готов откат. Фичи включаем флагами и постепенно.","План деплоя, план отката, журнал деплоя"],
+["+ 4 дня","Hypercare","Наблюдаем","Смотрим метрики, ловим жалобы, при проблемах выключаем флаг или откатываем. Release notes и анонс клиентам.","Пострелизный мониторинг, release notes, hotfix-запись"],
+["+ 1 нед","Ретро","Учимся","Что сработало, что нет, какие действия. Смотрим метрики и правим процесс для следующего рейса.","Ретроспектива и метрики"]
+];
+const rail=document.getElementById('rail'),card=document.getElementById('card');
+function show(i){
+ [...rail.children].forEach((b,k)=>b.classList.toggle('on',k==i));
+ const s=S[i];
+ card.innerHTML='<h3>'+s[1]+' — '+s[2]+'</h3>'+s[3]+'<div class="doc">📄 Документы: '+s[4]+'</div>';
+}
+S.forEach((s,i)=>{const b=document.createElement('button');b.className='st';b.innerHTML='<small>'+s[0]+'</small><b>'+(i+1)+'</b>'+s[1];b.onclick=()=>show(i);rail.appendChild(b)});
+show(1);
+
+const C=[
+["Фича не успевает","Не двигаем дату. Фичу из состава убираем (сначала Could, потом Should), оформляем change request, едет следующим поездом."],
+["Нашли критичный баг","Блокер: чиним и перепроверяем критичный путь. Не получается к go/no-go: исключаем фичу или включаем её только под флагом выключенной."],
+["Сломалось после релиза","Сначала выключаем feature flag (1 минута). Не помогло: откат по плану. Потом разбор причин и запись о hotfix."],
+["Партнёр/смежная команда задержали","Вскрываем это как можно раньше (на scope freeze). Есть план Б: выкатываем без интеграции, включаем позже."],
+["Бизнесу «срочно сейчас»","Идём «экспрессом»: hotfix по короткому процессу, сокращённый go/no-go, но всё равно с тестами и откатом."]
+];
+const bt=document.getElementById('btns'),sim=document.getElementById('sim');
+C.forEach((c,i)=>{const b=document.createElement('button');b.textContent=c[0];b.onclick=()=>{[...bt.children].forEach((x,k)=>x.classList.toggle('on',k==i));sim.innerHTML='👉 '+c[1]};bt.appendChild(b)});
+bt.children[0].click();
+</script>
+</body></html>
